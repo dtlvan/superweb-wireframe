@@ -24,13 +24,13 @@ export default function AppDetailPage() {
 
   function handlePromptClick(promptId: string, promptText: string) {
     if (!app) return;
-    const sessionId = createSession(app.id, app.name, app.icon, promptText);
+    const sessionId = createSession(app.id, app.name, app.icon, promptText, promptId);
     addMessage(sessionId, {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       role: "user",
       content: promptText,
     });
-    router.push(`/chat/${sessionId}?promptId=${promptId}`);
+    router.push(`/chat/${sessionId}`);
   }
 
   return (

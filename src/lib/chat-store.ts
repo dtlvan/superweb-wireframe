@@ -8,6 +8,7 @@ export interface ChatSession {
   appName: string;
   appIcon: string;
   title: string;
+  promptId?: string;
   messages: ChatMessage[];
   createdAt: Date;
 }
@@ -45,7 +46,8 @@ export function createSession(
   appId: string,
   appName: string,
   appIcon: string,
-  firstMessage?: string
+  firstMessage?: string,
+  promptId?: string
 ): string {
   const id = `chat-${Date.now()}`;
   sessions = [
@@ -55,6 +57,7 @@ export function createSession(
       appName,
       appIcon,
       title: firstMessage ? summarizeTitle(firstMessage) : appName,
+      promptId,
       messages: [],
       createdAt: new Date(),
     },

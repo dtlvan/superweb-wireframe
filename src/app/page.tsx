@@ -36,13 +36,13 @@ export default function Home() {
     promptId: string,
     promptText: string
   ) {
-    const sessionId = createSession(appId, appName, appIcon, promptText);
+    const sessionId = createSession(appId, appName, appIcon, promptText, promptId);
     addMessage(sessionId, {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       role: "user",
       content: promptText,
     });
-    router.push(`/chat/${sessionId}?promptId=${promptId}`);
+    router.push(`/chat/${sessionId}`);
   }
 
   function handleSend() {

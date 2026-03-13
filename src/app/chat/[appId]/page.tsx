@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import {
   Send,
@@ -76,10 +76,8 @@ const FOLLOW_UP_SUGGESTIONS: Record<string, string[]> = {
 
 export default function ChatPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = params.appId as string;
-  const promptId = searchParams.get("promptId");
 
   const sessions = useSyncExternalStore(subscribe, getSessions, getSessions);
   const session = getSession(sessionId);
@@ -98,12 +96,12 @@ export default function ChatPage() {
 
   // Auto-trigger scripted response for prompt starters
   useEffect(() => {
-    if (!promptId || startedRef.current || !session) return;
+    if (!session?.promptId || startedRef.current) return;
     if (session.messages.length !== 1) return;
     startedRef.current = true;
-    streamScriptedResponse(promptId);
+    streamScriptedResponse(session.promptId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [promptId, session]);
+  }, [session]);
 
   // Auto-resize textarea
   useEffect(() => {
