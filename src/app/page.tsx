@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Send, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { Send, Sparkles, Paperclip, Mic, Globe } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { miniApps } from "@/lib/apps-data";
 import { createSession, addMessage } from "@/lib/chat-store";
 
@@ -19,6 +19,15 @@ const suggestions = [
 export default function Home() {
   const router = useRouter();
   const [input, setInput] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    }
+  }, [input]);
 
   function handleSuggestionClick(
     appId: string,
@@ -94,32 +103,72 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Input */}
+        {/* AI Prompt Input */}
         <div className="w-full">
-          <div className="flex items-end gap-3 bg-gray-50 rounded-2xl border border-gray-200 p-3 focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-200 transition-all">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder="Nhắn tin cho Trợ lý V-AI..."
-              rows={1}
-              className="flex-1 bg-transparent resize-none text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none min-h-[24px] max-h-[120px]"
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim()}
-              className="p-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-30 disabled:hover:bg-gray-900 transition-colors shrink-0"
-            >
-              <Send size={16} />
-            </button>
+          <div className={`relative rounded-2xl border transition-all duration-200 ${
+            input.trim()
+              ? "border-violet-300 ring-2 ring-violet-100 bg-white shadow-sm"
+              : "border-gray-200 bg-gray-50 hover:border-gray-300"
+          }`}>
+            {/* Input area */}
+            <div className="flex items-end gap-2 px-4 pt-3 pb-2">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Hỏi Trợ lý V-AI bất cứ điều gì..."
+                rows={1}
+                className="flex-1 bg-transparent resize-none text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none min-h-[24px] max-h-[120px]"
+              />
+            </div>
+
+            {/* Bottom toolbar */}
+            <div className="flex items-center justify-between px-3 pb-2.5">
+              <div className="flex items-center gap-1">
+                <button
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Đính kèm file"
+                >
+                  <Paperclip size={16} />
+                </button>
+                <button
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Nhập giọng nói"
+                >
+                  <Mic size={16} />
+                </button>
+                <button
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                  title="Tìm trên web"
+                >
+                  <Globe size={16} />
+                </button>
+              </div>
+
+              <button
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  input.trim()
+                    ? "bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600 text-white shadow-sm"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                <Sparkles size={12} />
+                Gửi
+                <Send size={12} />
+              </button>
+            </div>
           </div>
-          <p className="text-xs text-gray-400 text-center mt-2">
-            Phản hồi AI là bản demo kịch bản. Chuyển sang API thật trong cài đặt.
+
+          <p className="text-[11px] text-gray-400 text-center mt-1.5">
+            AI Agent sẽ phân tích và trả lời dựa trên ngữ cảnh cuộc trò chuyện
           </p>
         </div>
       </div>

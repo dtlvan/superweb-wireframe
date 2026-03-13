@@ -1,6 +1,47 @@
 "use client";
 
 import { Widget } from "@/lib/types";
+import { useState } from "react";
+import { ChevronDown, Smartphone, ExternalLink } from "lucide-react";
+
+/* Action labels per widget type */
+const WIDGET_ACTIONS: Record<
+  string,
+  { label: string; icon: string }[]
+> = {
+  map: [
+    { label: "Xem chi tiết bản đồ", icon: "🗺️" },
+    { label: "Chỉ đường", icon: "🧭" },
+  ],
+  playlist: [
+    { label: "Nghe nhạc", icon: "▶️" },
+    { label: "Lưu playlist", icon: "💾" },
+  ],
+  restaurant: [
+    { label: "Xem thực đơn", icon: "📋" },
+    { label: "Đặt bàn", icon: "🪑" },
+  ],
+  itinerary: [
+    { label: "Xem lịch trình đầy đủ", icon: "📅" },
+    { label: "Chia sẻ nhóm", icon: "👥" },
+  ],
+  weather: [
+    { label: "Dự báo 7 ngày", icon: "📊" },
+    { label: "Cài cảnh báo", icon: "🔔" },
+  ],
+  shopping: [
+    { label: "So sánh giá", icon: "📊" },
+    { label: "Mua ngay", icon: "🛒" },
+  ],
+  booking: [
+    { label: "Xem chi tiết", icon: "📄" },
+    { label: "Đặt ngay", icon: "✅" },
+  ],
+  recipe: [
+    { label: "Xem công thức", icon: "👨‍🍳" },
+    { label: "Lưu món", icon: "❤️" },
+  ],
+};
 
 function generateWidgetHTML(widget: Widget): string {
   const baseStyles = `
@@ -27,6 +68,8 @@ function generateWidgetHTML(widget: Widget): string {
       return generateWeatherWidget(widget, baseStyles);
     case "shopping":
       return generateShoppingWidget(widget, baseStyles);
+    case "recipe":
+      return generateRecipeWidget(widget, baseStyles);
     default:
       return `<html><body>${baseStyles}<div class="card"><p>Widget: ${widget.type}</p></div></body></html>`;
   }
@@ -331,6 +374,59 @@ function generateShoppingWidget(widget: Widget, baseStyles: string): string {
   </body></html>`;
 }
 
+function generateRecipeWidget(widget: Widget, baseStyles: string): string {
+  const data = widget.data as {
+    name: string;
+    servings: string;
+    prepTime: string;
+    cookTime: string;
+    ingredients: { item: string; amount: string }[];
+    steps: string[];
+  };
+  return `<!DOCTYPE html><html><head>${baseStyles}
+    <style>
+      .recipe-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #e5e7eb; }
+      .recipe-icon { width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, #f97316, #ef4444); display: flex; align-items: center; justify-content: center; font-size: 28px; }
+      .recipe-title { font-size: 16px; font-weight: 700; color: #111; margin-bottom: 4px; }
+      .recipe-meta { display: flex; gap: 12px; font-size: 11px; color: #6b7280; }
+      .recipe-meta span { display: flex; align-items: center; gap: 4px; }
+      .section-title { font-size: 14px; font-weight: 600; color: #111; margin: 16px 0 8px; display: flex; align-items: center; gap: 6px; }
+      .ingredient { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #f3f4f6; font-size: 13px; }
+      .ingredient-name { color: #4b5563; }
+      .ingredient-amount { color: #6b7280; font-weight: 500; }
+      .step { display: flex; gap: 10px; padding: 8px 0; }
+      .step-num { width: 24px; height: 24px; border-radius: 50%; background: #f97316; color: #fff; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      .step-text { font-size: 13px; color: #4b5563; line-height: 1.5; }
+    </style>
+  </head><body>
+    <div class="recipe-header">
+      <div class="recipe-icon">👨‍🍳</div>
+      <div>
+        <div class="recipe-title">${data.name}</div>
+        <div class="recipe-meta">
+          <span>🍽️ ${data.servings}</span>
+          <span>⏱️ Chuẩn bị: ${data.prepTime}</span>
+          <span>🔥 Nấu: ${data.cookTime}</span>
+        </div>
+      </div>
+    </div>
+    <div class="section-title">📝 Nguyên liệu</div>
+    ${data.ingredients.map((ing) => `
+      <div class="ingredient">
+        <span class="ingredient-name">${ing.item}</span>
+        <span class="ingredient-amount">${ing.amount}</span>
+      </div>
+    `).join("")}
+    <div class="section-title">👨‍🍳 Các bước thực hiện</div>
+    ${data.steps.map((step, i) => `
+      <div class="step">
+        <div class="step-num">${i + 1}</div>
+        <div class="step-text">${step}</div>
+      </div>
+    `).join("")}
+  </body></html>`;
+}
+
 const WIDGET_HEIGHT: Record<string, number> = {
   map: 350,
   playlist: 480,
@@ -345,9 +441,12 @@ const WIDGET_HEIGHT: Record<string, number> = {
 export function WidgetFrame({ widget }: { widget: Widget }) {
   const height = WIDGET_HEIGHT[widget.type] || 300;
   const html = generateWidgetHTML(widget);
+  const actions = WIDGET_ACTIONS[widget.type] || [{ label: "Xem chi tiết", icon: "📄" }];
+  const [expanded, setExpanded] = useState(false);
 
   return (
     <div className="my-3 rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+      {/* Title bar */}
       <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 border-b border-gray-200">
         <div className="flex gap-1.5">
           <div className="w-2.5 h-2.5 rounded-full bg-red-400" />
@@ -356,6 +455,8 @@ export function WidgetFrame({ widget }: { widget: Widget }) {
         </div>
         <span className="text-xs text-gray-500 ml-2">{widget.title}</span>
       </div>
+
+      {/* Widget iframe */}
       <iframe
         srcDoc={html}
         className="w-full border-0"
@@ -363,6 +464,61 @@ export function WidgetFrame({ widget }: { widget: Widget }) {
         sandbox="allow-scripts allow-same-origin"
         title={widget.title}
       />
+
+      {/* Action buttons */}
+      <div className="flex items-center gap-2 px-3 py-2.5 bg-white border-t border-gray-200">
+        {actions.map((action, i) => (
+          <button
+            key={i}
+            onClick={() => setExpanded((v) => !v)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+              expanded
+                ? "bg-violet-100 text-violet-700"
+                : "bg-gray-100 text-gray-700 hover:bg-violet-50 hover:text-violet-700"
+            }`}
+          >
+            <span>{action.icon}</span>
+            <span>{action.label}</span>
+            <ExternalLink size={10} className="ml-0.5 opacity-50" />
+          </button>
+        ))}
+      </div>
+
+      {/* Expandable V-App mobile prompt */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          expanded ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+        }`}
+      >
+        <div className="px-4 py-4 bg-gradient-to-r from-violet-50 to-blue-50 border-t border-gray-200">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center shrink-0">
+              <Smartphone size={18} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gray-900 mb-0.5">
+                Mở trên V-App Mobile
+              </p>
+              <p className="text-xs text-gray-500 leading-relaxed mb-3">
+                Tải ứng dụng V-App để xem chi tiết đầy đủ, tương tác trực tiếp và nhận thông báo theo thời gian thực.
+              </p>
+              <div className="flex items-center gap-2">
+                <button className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-gray-900 text-white text-xs font-medium hover:bg-gray-800 transition-colors">
+                  <Smartphone size={12} />
+                  Tải V-App
+                </button>
+                <button
+                  onClick={() => setExpanded(false)}
+                  className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  <ChevronDown size={12} className="rotate-180" />
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

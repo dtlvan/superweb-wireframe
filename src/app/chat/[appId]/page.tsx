@@ -2,7 +2,15 @@
 
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { Send, Square } from "lucide-react";
+import {
+  Send,
+  Square,
+  Sparkles,
+  ArrowLeft,
+  Paperclip,
+  Mic,
+  Globe,
+} from "lucide-react";
 import {
   getSession,
   getSessions,
@@ -12,16 +20,63 @@ import {
 } from "@/lib/chat-store";
 import { getScriptedResponse } from "@/lib/scripted-conversations";
 import { ChatMessageBubble } from "@/components/chat-message";
+import { ChainOfThought } from "@/components/chain-of-thought";
 import { Widget } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 let msgCounter = 0;
 function nextMsgId() {
   return `msg-${Date.now()}-${++msgCounter}`;
 }
 
+/* Suggested follow-up prompts shown after AI finishes */
+const FOLLOW_UP_SUGGESTIONS: Record<string, string[]> = {
+  "vinpearl-travel": [
+    "Tìm vé máy bay giá rẻ",
+    "Gợi ý nhà hàng gần đó",
+    "Thời tiết hôm nay thế nào?",
+  ],
+  "music-dj": [
+    "Tạo thêm playlist khác",
+    "Tìm bài tương tự",
+    "Nhạc đang trending",
+  ],
+  "foodie-finder": [
+    "Tìm quán gần đây hơn",
+    "Xem thực đơn chi tiết",
+    "Gợi ý món khác",
+  ],
+  "shop-smart": [
+    "Tìm mã giảm giá",
+    "So sánh thêm sản phẩm",
+    "Đánh giá từ người dùng",
+  ],
+  "fitness-coach": [
+    "Xem bài tập tiếp theo",
+    "Gợi ý chế độ ăn",
+    "Theo dõi tiến trình",
+  ],
+  "language-tutor": [
+    "Luyện tập thêm",
+    "Giải thích ngữ pháp",
+    "Kiểm tra từ vựng",
+  ],
+  "movie-night": [
+    "Xem trailer phim",
+    "Tìm phim tương tự",
+    "Phim đang chiếu rạp",
+  ],
+  "weather-planner": [
+    "Dự báo tuần tới",
+    "Gợi ý hoạt động",
+    "So sánh thời tiết",
+  ],
+};
+
 export default function ChatPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const sessionId = params.appId as string;
   const promptId = searchParams.get("promptId");
 
@@ -30,7 +85,9 @@ export default function ChatPage() {
 
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef(false);
   const startedRef = useRef(false);
 
@@ -47,6 +104,25 @@ export default function ChatPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [promptId, session]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    }
+  }, [input]);
+
+  async function simulateThinking(durationMs: number = 2800) {
+    setIsThinking(true);
+    // Wait for chain-of-thought animation to complete
+    await delay(durationMs);
+    if (abortRef.current) {
+      setIsThinking(false);
+      return;
+    }
+    setIsThinking(false);
+  }
+
   async function streamScriptedResponse(pId: string) {
     const scripted = getScriptedResponse(pId);
     if (!scripted || !session) return;
@@ -54,7 +130,7 @@ export default function ChatPage() {
     setIsStreaming(true);
     abortRef.current = false;
 
-    // Add empty assistant message
+    // Add empty assistant message (shows thinking indicator)
     addMessage(sessionId, {
       id: nextMsgId(),
       role: "assistant",
@@ -62,6 +138,13 @@ export default function ChatPage() {
       widgets: [],
       isStreaming: true,
     });
+
+    // AI thinking phase — show chain-of-thought reasoning
+    await simulateThinking(2800);
+    if (abortRef.current) {
+      setIsStreaming(false);
+      return;
+    }
 
     let fullContent = "";
     const allWidgets = [...scripted.widgets];
@@ -97,10 +180,10 @@ export default function ChatPage() {
     setIsStreaming(false);
   }
 
-  async function handleSend() {
-    if (!input.trim() || isStreaming || !session) return;
+  async function handleSend(text?: string) {
+    const userMsg = (text || input).trim();
+    if (!userMsg || isStreaming || !session) return;
 
-    const userMsg = input.trim();
     setInput("");
 
     addMessage(sessionId, {
@@ -120,6 +203,13 @@ export default function ChatPage() {
       isStreaming: true,
     });
 
+    // AI thinking phase — show chain-of-thought reasoning
+    await simulateThinking(2800);
+    if (abortRef.current) {
+      setIsStreaming(false);
+      return;
+    }
+
     const mockResponse = generateMockResponse(userMsg, session.appName);
     let content = "";
     for (const char of mockResponse) {
@@ -134,6 +224,7 @@ export default function ChatPage() {
 
   function handleStop() {
     abortRef.current = true;
+    setIsThinking(false);
     setIsStreaming(false);
   }
 
@@ -145,17 +236,52 @@ export default function ChatPage() {
     );
   }
 
+  const suggestions = FOLLOW_UP_SUGGESTIONS[session.appId] || [
+    "Cho tôi biết thêm",
+    "Gợi ý khác đi",
+    "Cảm ơn nhé!",
+  ];
+  const showSuggestions =
+    !isStreaming &&
+    session.messages.length >= 2 &&
+    session.messages[session.messages.length - 1]?.role === "assistant";
+
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b border-gray-200 px-6 py-3 flex items-center gap-3 shrink-0">
-        <span className="text-xl">{session.appIcon}</span>
-        <span className="text-sm font-medium text-gray-900">
-          {session.appName}
-        </span>
-        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-          Trợ lý AI
-        </span>
+      {/* Enhanced Header */}
+      <div className="border-b border-gray-200 px-4 py-3 flex items-center gap-3 shrink-0 bg-white/80 backdrop-blur-sm">
+        <button
+          onClick={() => router.back()}
+          className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
+        >
+          <ArrowLeft size={18} />
+        </button>
+        <div className="flex items-center gap-2.5 flex-1">
+          <span className="text-xl">{session.appIcon}</span>
+          <div>
+            <span className="text-sm font-medium text-gray-900">
+              {session.appName}
+            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="flex items-center gap-1 text-[11px] text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded-full font-medium">
+                <Sparkles size={10} />
+                AI Assistant
+              </span>
+              {isThinking && (
+                <span className="flex items-center gap-1 text-[11px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full font-medium">
+                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                  Đang xử lý
+                </span>
+              )}
+              {isStreaming && !isThinking && (
+                <span className="flex items-center gap-1 text-[11px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full font-medium animate-pulse">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
+                  Đang trả lời
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Messages */}
@@ -164,46 +290,114 @@ export default function ChatPage() {
           {session.messages.map((msg) => (
             <ChatMessageBubble key={msg.id} message={msg} />
           ))}
+
+          {/* AI Chain-of-Thought thinking */}
+          <ChainOfThought appId={session.appId} isActive={isThinking} />
+
           <div ref={messagesEndRef} />
         </div>
       </div>
 
-      {/* Input */}
-      <div className="border-t border-gray-200 px-6 py-4 shrink-0">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-end gap-3 bg-gray-50 rounded-2xl border border-gray-200 p-3 focus-within:border-gray-400 focus-within:ring-1 focus-within:ring-gray-200">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleSend();
-                }
-              }}
-              placeholder={`Nhắn tin cho ${session.appName}...`}
-              rows={1}
-              className="flex-1 bg-transparent resize-none text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none min-h-[24px] max-h-[120px]"
-            />
-            {isStreaming ? (
+      {/* Suggested follow-ups */}
+      {showSuggestions && (
+        <div className="px-6 pb-2 shrink-0">
+          <div className="max-w-3xl mx-auto flex items-center gap-2 overflow-x-auto">
+            <span className="text-[11px] text-gray-400 shrink-0">Gợi ý:</span>
+            {suggestions.map((s, i) => (
               <button
-                onClick={handleStop}
-                className="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-700 transition-colors shrink-0"
+                key={i}
+                onClick={() => handleSend(s)}
+                className="shrink-0 px-3 py-1.5 rounded-full border border-gray-200 text-xs text-gray-600 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-700 transition-all"
               >
-                <Square size={16} />
+                {s}
               </button>
-            ) : (
-              <button
-                onClick={handleSend}
-                disabled={!input.trim()}
-                className="p-2 rounded-lg bg-gray-900 hover:bg-gray-800 text-white disabled:opacity-30 disabled:hover:bg-gray-900 transition-colors shrink-0"
-              >
-                <Send size={16} />
-              </button>
-            )}
+            ))}
           </div>
-          <p className="text-xs text-gray-400 text-center mt-2">
-            Phản hồi AI là bản demo kịch bản. Chuyển sang API thật trong cài đặt.
+        </div>
+      )}
+
+      {/* AI Prompt Input */}
+      <div className="border-t border-gray-200 px-6 py-3 shrink-0 bg-white/80 backdrop-blur-sm">
+        <div className="max-w-3xl mx-auto">
+          <div className={`relative rounded-2xl border transition-all duration-200 ${
+            input.trim()
+              ? "border-violet-300 ring-2 ring-violet-100 bg-white shadow-sm"
+              : "border-gray-200 bg-gray-50 hover:border-gray-300"
+          }`}>
+            {/* Input area */}
+            <div className="flex items-end gap-2 px-4 pt-3 pb-2">
+              <textarea
+                ref={textareaRef}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder={`Hỏi ${session.appName} bất cứ điều gì...`}
+                rows={1}
+                disabled={isStreaming}
+                className="flex-1 bg-transparent resize-none text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none min-h-[24px] max-h-[120px] disabled:opacity-50"
+              />
+            </div>
+
+            {/* Bottom toolbar */}
+            <div className="flex items-center justify-between px-3 pb-2.5">
+              <div className="flex items-center gap-1">
+                <button
+                  disabled={isStreaming}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-30"
+                  title="Đính kèm file"
+                >
+                  <Paperclip size={16} />
+                </button>
+                <button
+                  disabled={isStreaming}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-30"
+                  title="Nhập giọng nói"
+                >
+                  <Mic size={16} />
+                </button>
+                <button
+                  disabled={isStreaming}
+                  className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors disabled:opacity-30"
+                  title="Tìm trên web"
+                >
+                  <Globe size={16} />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {isStreaming && (
+                  <button
+                    onClick={handleStop}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-medium transition-colors"
+                  >
+                    <Square size={12} />
+                    Dừng
+                  </button>
+                )}
+                <button
+                  onClick={() => handleSend()}
+                  disabled={!input.trim() || isStreaming}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    input.trim() && !isStreaming
+                      ? "bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600 text-white shadow-sm"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                  }`}
+                >
+                  <Sparkles size={12} />
+                  Gửi
+                  <Send size={12} />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-[11px] text-gray-400 text-center mt-1.5">
+            AI Agent sẽ phân tích và trả lời dựa trên ngữ cảnh cuộc trò chuyện
           </p>
         </div>
       </div>
