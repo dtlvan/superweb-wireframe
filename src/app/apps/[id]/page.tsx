@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
 import { ArrowLeft, Star, Download, Share2, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { getAppById } from "@/lib/apps-data";
@@ -13,6 +14,11 @@ export default function AppDetailPage() {
   const params = useParams();
   const router = useRouter();
   const app = getAppById(params.id as string);
+
+  // Prefetch chat route so navigation is instant
+  useEffect(() => {
+    router.prefetch("/chat/placeholder");
+  }, [router]);
 
   if (!app) {
     return (

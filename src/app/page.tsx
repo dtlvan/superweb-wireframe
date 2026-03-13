@@ -18,6 +18,11 @@ const suggestions = [
 
 export default function Home() {
   const router = useRouter();
+
+  // Prefetch chat route so navigation is instant
+  useEffect(() => {
+    router.prefetch("/chat/placeholder");
+  }, [router]);
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
