@@ -172,10 +172,7 @@ export function Sidebar() {
                 }`}
               >
                 <span className="text-base shrink-0">{session.appIcon}</span>
-                <span className="truncate">
-                  {session.messages[0]?.content.slice(0, 40) ||
-                    session.appName}
-                </span>
+                <span className="truncate">{session.title}</span>
               </Link>
             ))}
           </div>

@@ -490,9 +490,9 @@ export function WidgetFrame({ widget }: { widget: Widget }) {
           expanded ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
         }`}
       >
-        <div className="px-4 py-4 bg-gradient-to-r from-violet-50 to-blue-50 border-t border-gray-200">
+        <div className="px-4 py-4 bg-gradient-to-r from-red-50 to-orange-50 border-t border-gray-200">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#EA0029] flex items-center justify-center shrink-0">
               <Smartphone size={18} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">

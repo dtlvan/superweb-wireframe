@@ -36,7 +36,7 @@ export default function Home() {
     promptId: string,
     promptText: string
   ) {
-    const sessionId = createSession(appId, appName, appIcon);
+    const sessionId = createSession(appId, appName, appIcon, promptText);
     addMessage(sessionId, {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       role: "user",
@@ -49,7 +49,7 @@ export default function Home() {
     if (!input.trim()) return;
     // Start a generic chat with the first app as default
     const defaultApp = miniApps[0];
-    const sessionId = createSession(defaultApp.id, defaultApp.name, defaultApp.icon);
+    const sessionId = createSession(defaultApp.id, defaultApp.name, defaultApp.icon, input.trim());
     addMessage(sessionId, {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       role: "user",
@@ -63,7 +63,7 @@ export default function Home() {
       <div className="max-w-2xl w-full flex flex-col items-center">
         {/* Branding */}
         <div className="mb-10 text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-blue-500 mb-5">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[#EA0029] mb-5">
             <Sparkles size={24} className="text-white" />
           </div>
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -156,7 +156,7 @@ export default function Home() {
                 disabled={!input.trim()}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                   input.trim()
-                    ? "bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600 text-white shadow-sm"
+                    ? "bg-[#EA0029] hover:bg-[#C80023] text-white shadow-sm"
                     : "bg-gray-100 text-gray-400 cursor-not-allowed"
                 }`}
               >

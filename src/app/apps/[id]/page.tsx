@@ -24,7 +24,7 @@ export default function AppDetailPage() {
 
   function handlePromptClick(promptId: string, promptText: string) {
     if (!app) return;
-    const sessionId = createSession(app.id, app.name, app.icon);
+    const sessionId = createSession(app.id, app.name, app.icon, promptText);
     addMessage(sessionId, {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       role: "user",

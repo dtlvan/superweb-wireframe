@@ -120,7 +120,7 @@ export function AIChainOfThought({
       if (step >= thoughts.length) {
         clearInterval(interval);
       }
-    }, 450);
+    }, 700);
 
     return () => clearInterval(interval);
   }, [isActive, thoughts.length, hasShown]);

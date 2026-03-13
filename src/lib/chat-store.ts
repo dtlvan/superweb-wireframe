@@ -7,6 +7,7 @@ export interface ChatSession {
   appId: string;
   appName: string;
   appIcon: string;
+  title: string;
   messages: ChatMessage[];
   createdAt: Date;
 }
@@ -33,10 +34,18 @@ export function getSession(id: string) {
   return sessions.find((s) => s.id === id);
 }
 
+/** Truncate to a short title from user's first message */
+function summarizeTitle(text: string, maxLen = 50): string {
+  const clean = text.replace(/\n/g, " ").trim();
+  if (clean.length <= maxLen) return clean;
+  return clean.slice(0, maxLen).replace(/\s+\S*$/, "") + "...";
+}
+
 export function createSession(
   appId: string,
   appName: string,
-  appIcon: string
+  appIcon: string,
+  firstMessage?: string
 ): string {
   const id = `chat-${Date.now()}`;
   sessions = [
@@ -45,6 +54,7 @@ export function createSession(
       appId,
       appName,
       appIcon,
+      title: firstMessage ? summarizeTitle(firstMessage) : appName,
       messages: [],
       createdAt: new Date(),
     },

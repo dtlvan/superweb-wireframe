@@ -257,31 +257,11 @@ export default function ChatPage() {
         >
           <ArrowLeft size={18} />
         </button>
-        <div className="flex items-center gap-2.5 flex-1">
-          <span className="text-xl">{session.appIcon}</span>
-          <div>
-            <span className="text-sm font-medium text-gray-900">
-              {session.appName}
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span className="flex items-center gap-1 text-[11px] text-[#EA0029] bg-red-50 px-1.5 py-0.5 rounded-full font-medium">
-                <Sparkles size={10} />
-                AI Assistant
-              </span>
-              {isThinking && (
-                <span className="flex items-center gap-1 text-[11px] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-full font-medium">
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
-                  Đang xử lý
-                </span>
-              )}
-              {isStreaming && !isThinking && (
-                <span className="flex items-center gap-1 text-[11px] text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full font-medium animate-pulse">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-                  Đang trả lời
-                </span>
-              )}
-            </div>
-          </div>
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <span className="text-xl shrink-0">{session.appIcon}</span>
+          <span className="text-sm font-medium text-gray-900 truncate">
+            {session.title}
+          </span>
         </div>
       </div>
 
@@ -298,7 +278,10 @@ export default function ChatPage() {
                 {isLastAssistant && (
                   <AIChainOfThought appId={session.appId} isActive={isThinking} />
                 )}
-                <ChatMessageBubble message={msg} />
+                {/* Hide thinking indicator when chain-of-thought is already showing */}
+                {!(isLastAssistant && isThinking && !msg.content) && (
+                  <ChatMessageBubble message={msg} />
+                )}
               </div>
             );
           })}
