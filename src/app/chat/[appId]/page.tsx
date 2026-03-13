@@ -20,7 +20,8 @@ import {
 } from "@/lib/chat-store";
 import { getScriptedResponse } from "@/lib/scripted-conversations";
 import { ChatMessageBubble } from "@/components/chat-message";
-import { ChainOfThought } from "@/components/chain-of-thought";
+import { AIChainOfThought } from "@/components/chain-of-thought";
+import { Suggestions, Suggestion } from "@/components/ai-elements/suggestion";
 import { Widget } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
@@ -263,7 +264,7 @@ export default function ChatPage() {
               {session.appName}
             </span>
             <div className="flex items-center gap-1.5">
-              <span className="flex items-center gap-1 text-[11px] text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded-full font-medium">
+              <span className="flex items-center gap-1 text-[11px] text-[#EA0029] bg-red-50 px-1.5 py-0.5 rounded-full font-medium">
                 <Sparkles size={10} />
                 AI Assistant
               </span>
@@ -287,12 +288,20 @@ export default function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         <div className="max-w-3xl mx-auto">
-          {session.messages.map((msg) => (
-            <ChatMessageBubble key={msg.id} message={msg} />
-          ))}
-
-          {/* AI Chain-of-Thought thinking */}
-          <ChainOfThought appId={session.appId} isActive={isThinking} />
+          {session.messages.map((msg, idx) => {
+            const isLastAssistant =
+              msg.role === "assistant" &&
+              idx === session.messages.length - 1;
+            return (
+              <div key={msg.id}>
+                {/* Show chain-of-thought before the last assistant message */}
+                {isLastAssistant && (
+                  <AIChainOfThought appId={session.appId} isActive={isThinking} />
+                )}
+                <ChatMessageBubble message={msg} />
+              </div>
+            );
+          })}
 
           <div ref={messagesEndRef} />
         </div>
@@ -301,17 +310,20 @@ export default function ChatPage() {
       {/* Suggested follow-ups */}
       {showSuggestions && (
         <div className="px-6 pb-2 shrink-0">
-          <div className="max-w-3xl mx-auto flex items-center gap-2 overflow-x-auto">
+          <div className="max-w-3xl mx-auto flex items-center gap-2">
             <span className="text-[11px] text-gray-400 shrink-0">Gợi ý:</span>
-            {suggestions.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => handleSend(s)}
-                className="shrink-0 px-3 py-1.5 rounded-full border border-gray-200 text-xs text-gray-600 hover:bg-violet-50 hover:border-violet-200 hover:text-violet-700 transition-all"
-              >
-                {s}
-              </button>
-            ))}
+            <Suggestions>
+              {suggestions.map((s) => (
+                <Suggestion
+                  key={s}
+                  suggestion={s}
+                  onClick={(text) => handleSend(text)}
+                  variant="outline"
+                  size="sm"
+                  className="text-xs text-gray-600 hover:bg-red-50 hover:border-[#EA0029]/30 hover:text-[#EA0029]"
+                />
+              ))}
+            </Suggestions>
           </div>
         </div>
       )}
@@ -321,7 +333,7 @@ export default function ChatPage() {
         <div className="max-w-3xl mx-auto">
           <div className={`relative rounded-2xl border transition-all duration-200 ${
             input.trim()
-              ? "border-violet-300 ring-2 ring-violet-100 bg-white shadow-sm"
+              ? "border-[#EA0029]/30 ring-2 ring-[#EA0029]/10 bg-white shadow-sm"
               : "border-gray-200 bg-gray-50 hover:border-gray-300"
           }`}>
             {/* Input area */}
@@ -384,7 +396,7 @@ export default function ChatPage() {
                   disabled={!input.trim() || isStreaming}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                     input.trim() && !isStreaming
-                      ? "bg-gradient-to-r from-violet-500 to-blue-500 hover:from-violet-600 hover:to-blue-600 text-white shadow-sm"
+                      ? "bg-[#EA0029] hover:bg-[#C80023] text-white shadow-sm"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   }`}
                 >
