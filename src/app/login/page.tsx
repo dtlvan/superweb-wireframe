@@ -100,10 +100,6 @@ export default function LoginPage() {
     router.push("/");
   }
 
-  function handleSkip() {
-    router.push("/");
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
       {/* V-ID watermark pattern */}
@@ -114,13 +110,8 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md px-4 relative z-10">
         {/* V-ID Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <svg width="48" height="40" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M0 0H10L24 32L14 32L0 0Z" fill="#EA0029"/>
-            <path d="M14 0H24L38 32H28L14 0Z" fill="#EA0029"/>
-            <path d="M32 0L38 14L44 0H48L38 24L28 0H32Z" fill="#EA0029"/>
-          </svg>
-          <span className="text-3xl font-bold text-gray-900 tracking-tight">ID</span>
+        <div className="flex items-center justify-center mb-8">
+          <img src="/vid-logo.svg" alt="V-ID" className="h-12" />
         </div>
 
         {/* Card */}
@@ -183,20 +174,15 @@ export default function LoginPage() {
                 <a href="#" className="text-blue-600 underline">Chính sách Bảo vệ dữ liệu cá nhân</a>.
               </p>
 
-              {/* Divider */}
-              <div className="flex items-center gap-3 my-6">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400 font-medium uppercase">Hoặc</span>
-                <div className="flex-1 h-px bg-gray-200" />
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => router.back()}
+                  className="text-sm text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1.5"
+                >
+                  <ArrowLeft size={14} />
+                  Quay lại
+                </button>
               </div>
-
-              {/* Skip / Guest mode */}
-              <button
-                onClick={handleSkip}
-                className="w-full py-3.5 rounded-xl border border-gray-200 text-gray-700 font-medium text-[15px] hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
-              >
-                Bỏ qua, dùng thử với tư cách khách
-              </button>
             </>
           )}
 

@@ -1,0 +1,15 @@
+<svg width="200" height="80" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- V-bird shape -->
+  <g>
+    <!-- Left wing -->
+    <path d="M10 10L55 10L85 70L40 70Z" fill="#EA0029"/>
+    <!-- Right wing -->
+    <path d="M45 10L90 10L120 70L75 70Z" fill="#EA0029"/>
+    <!-- Tail -->
+    <path d="M75 10L105 10L90 42L75 10Z" fill="#EA0029"/>
+    <!-- Star cutout -->
+    <path d="M65 30L68 40L78 40L70 46L73 56L65 50L57 56L60 46L52 40L62 40Z" fill="white"/>
+  </g>
+  <!-- ID text -->
+  <text x="130" y="58" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="48" fill="#1a1a1a">ID</text>
+</svg>
