@@ -1,15 +1,18 @@
-<svg width="200" height="80" viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- V-bird shape -->
+<svg width="160" height="64" viewBox="0 0 160 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- V-bird / Phoenix shape -->
   <g>
     <!-- Left wing -->
-    <path d="M10 10L55 10L85 70L40 70Z" fill="#EA0029"/>
+    <path d="M4 4C4 4 18 4 24 4C24 4 48 52 50 56L28 56C28 56 8 12 4 4Z" fill="#EA0029"/>
     <!-- Right wing -->
-    <path d="M45 10L90 10L120 70L75 70Z" fill="#EA0029"/>
-    <!-- Tail -->
-    <path d="M75 10L105 10L90 42L75 10Z" fill="#EA0029"/>
-    <!-- Star cutout -->
-    <path d="M65 30L68 40L78 40L70 46L73 56L65 50L57 56L60 46L52 40L62 40Z" fill="white"/>
+    <path d="M34 4C34 4 48 4 54 4L80 4C80 4 60 42 54 56L44 56C44 56 38 12 34 4Z" fill="#EA0029"/>
+    <!-- Upper right accent / tail -->
+    <path d="M62 4L84 4C84 4 72 28 68 36L54 36C54 36 58 12 62 4Z" fill="#EA0029"/>
+    <!-- Merge all into unified bird shape -->
   </g>
+  <!-- Unified bird body -->
+  <path d="M6 2L36 2L52 44L56 2L88 2L62 58L24 58Z" fill="#EA0029"/>
+  <!-- White 5-pointed star cutout -->
+  <path d="M47 16L49.5 24L58 24L51.2 29L53.8 37L47 32L40.2 37L42.8 29L36 24L44.5 24Z" fill="white"/>
   <!-- ID text -->
-  <text x="130" y="58" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="48" fill="#1a1a1a">ID</text>
+  <text x="96" y="46" font-family="'Arial Black', 'Helvetica Neue', Arial, sans-serif" font-weight="900" font-size="42" letter-spacing="-1" fill="#1A1A1A">ID</text>
 </svg>

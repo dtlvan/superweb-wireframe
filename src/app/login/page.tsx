@@ -103,15 +103,16 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 relative overflow-hidden">
       {/* V-ID watermark pattern */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 15L30 40H25L15 15H20ZM30 15L35 28L40 15H35L30 15Z' fill='%23EA0029'/%3E%3C/svg%3E")`,
-        backgroundSize: "80px 80px",
+      <div className="absolute inset-0 opacity-[0.04]" style={{
+        backgroundImage: `url("/logo.webp")`,
+        backgroundSize: "100px",
+        backgroundRepeat: "repeat",
       }} />
 
       <div className="w-full max-w-md px-4 relative z-10">
         {/* V-ID Logo */}
         <div className="flex items-center justify-center mb-8">
-          <img src="/vid-logo.svg" alt="V-ID" className="h-12" />
+          <img src="/logo.webp" alt="V-ID" className="h-12" />
         </div>
 
         {/* Card */}
