@@ -42,7 +42,10 @@ export default function Home() {
     promptId: string,
     promptText: string
   ) {
-    recordGuestMessage(); // Count against guest limit
+    if (!recordGuestMessage()) {
+      router.push("/login");
+      return;
+    }
     const sessionId = createSession(appId, appName, appIcon, promptText, promptId);
     addMessage(sessionId, {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -54,7 +57,10 @@ export default function Home() {
 
   function handleSend() {
     if (!input.trim()) return;
-    recordGuestMessage(); // Count against guest limit
+    if (!recordGuestMessage()) {
+      router.push("/login");
+      return;
+    }
     // Start a generic chat with the first app as default
     const defaultApp = miniApps[0];
     const sessionId = createSession(defaultApp.id, defaultApp.name, defaultApp.icon, input.trim());
