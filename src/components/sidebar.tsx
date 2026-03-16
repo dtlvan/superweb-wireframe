@@ -186,34 +186,38 @@ export function Sidebar() {
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-gray-200 space-y-1">
-        <button className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition-colors w-full text-sm">
-          <Settings size={16} />
-          <span>Cài đặt</span>
-        </button>
+      <div className="p-3 border-t border-gray-200">
         {isGuest ? (
           <Link
             href="/login"
-            className="flex items-center gap-3 px-3 py-2 rounded-lg text-[#EA0029] hover:bg-red-50 transition-colors w-full text-sm font-medium"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#EA0029] hover:bg-red-50 transition-colors w-full text-sm font-medium"
           >
             <LogIn size={16} />
             <span>Đăng nhập V-ID</span>
           </Link>
         ) : (
           <div className="flex items-center gap-3 px-3 py-2">
-            <div className="w-7 h-7 rounded-full bg-[#EA0029] flex items-center justify-center">
-              <User size={14} className="text-white" />
+            <div className="w-8 h-8 rounded-full bg-[#EA0029] flex items-center justify-center">
+              <User size={15} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">{authState.user!.phone}</p>
             </div>
-            <button
-              onClick={logout}
-              className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-              title="Đăng xuất"
-            >
-              <LogOut size={14} />
-            </button>
+            <div className="flex items-center gap-0.5">
+              <button
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                title="Cài đặt"
+              >
+                <Settings size={14} />
+              </button>
+              <button
+                onClick={logout}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                title="Đăng xuất"
+              >
+                <LogOut size={14} />
+              </button>
+            </div>
           </div>
         )}
       </div>
