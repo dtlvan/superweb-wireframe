@@ -9,6 +9,7 @@ import {
   createSession,
   addMessage,
 } from "@/lib/chat-store";
+import { recordGuestMessage } from "@/lib/auth-store";
 
 export default function AppDetailPage() {
   const params = useParams();
@@ -30,6 +31,7 @@ export default function AppDetailPage() {
 
   function handlePromptClick(promptId: string, promptText: string) {
     if (!app) return;
+    recordGuestMessage(); // Count against guest limit
     const sessionId = createSession(app.id, app.name, app.icon, promptText, promptId);
     addMessage(sessionId, {
       id: `msg-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
