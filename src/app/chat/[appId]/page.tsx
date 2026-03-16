@@ -447,6 +447,8 @@ export default function ChatPage() {
 
           <p className="text-[11px] text-gray-400 text-center mt-1.5">
             AI Agent sẽ phân tích và trả lời dựa trên ngữ cảnh cuộc trò chuyện
+            {/* TODO: remove debug counter */}
+            {isGuest && <span className="ml-2 text-red-400">[DEBUG: {authState.messageCount}/{5} used, {remaining} left]</span>}
           </p>
         </div>
       </div>
