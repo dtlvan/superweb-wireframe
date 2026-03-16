@@ -5,8 +5,8 @@ export interface User {
   name: string;
 }
 
-const DAILY_LIMIT = 20;
-const WARNING_THRESHOLD = 5;
+const DAILY_LIMIT = 5; // TODO: change back to 20 for production
+const WARNING_THRESHOLD = 3;
 
 export interface AuthState {
   user: User | null;

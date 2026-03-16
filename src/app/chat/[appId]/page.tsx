@@ -92,8 +92,8 @@ export default function ChatPage() {
 
   // Derive limit state from reactive authState
   const isGuest = !authState.user;
-  const remaining = isGuest ? Math.max(0, 20 - authState.messageCount) : Infinity;
-  const showWarning = isGuest && remaining > 0 && remaining <= 5;
+  const remaining = isGuest ? Math.max(0, 5 - authState.messageCount) : Infinity; // TODO: change back to 20
+  const showWarning = isGuest && remaining > 0 && remaining <= 3;
   const limitReached = isGuest && remaining <= 0;
 
   const [input, setInput] = useState("");
