@@ -23,11 +23,7 @@ import {
 import {
   subscribeAuth,
   getAuthState,
-  getMessagesRemaining,
-  shouldShowWarning,
-  isLimitReached,
   recordGuestMessage,
-  isLoggedIn,
 } from "@/lib/auth-store";
 import { getScriptedResponse } from "@/lib/scripted-conversations";
 import { ChatMessageBubble } from "@/components/chat-message";
@@ -94,9 +90,11 @@ export default function ChatPage() {
   const authState = useSyncExternalStore(subscribeAuth, getAuthState, getAuthState);
   const session = getSession(sessionId);
 
-  const remaining = getMessagesRemaining();
-  const showWarning = shouldShowWarning();
-  const limitReached = isLimitReached();
+  // Derive limit state from reactive authState
+  const isGuest = !authState.user;
+  const remaining = isGuest ? Math.max(0, 20 - authState.messageCount) : Infinity;
+  const showWarning = isGuest && remaining > 0 && remaining <= 5;
+  const limitReached = isGuest && remaining <= 0;
 
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
