@@ -8,11 +8,17 @@ export interface User {
 const DAILY_LIMIT = 20;
 const WARNING_THRESHOLD = 5;
 
-let user: User | null = null;
-let messageCount = 0;
+export interface AuthState {
+  user: User | null;
+  messageCount: number;
+}
+
+let snapshot: AuthState = { user: null, messageCount: 0 };
 let listeners: (() => void)[] = [];
 
 function notify() {
+  // Create a new snapshot reference so useSyncExternalStore detects the change
+  snapshot = { user: snapshot.user, messageCount: snapshot.messageCount };
   listeners.forEach((l) => l());
 }
 
@@ -23,55 +29,53 @@ export function subscribeAuth(listener: () => void) {
   };
 }
 
-export function getAuthState() {
-  return { user, messageCount };
+export function getAuthState(): AuthState {
+  return snapshot;
 }
 
 export function isLoggedIn() {
-  return user !== null;
+  return snapshot.user !== null;
 }
 
 export function getUser() {
-  return user;
+  return snapshot.user;
 }
 
 export function login(phone: string) {
-  user = { phone, name: phone };
-  messageCount = 0; // Reset limit on login
-  notify();
+  snapshot = { user: { phone, name: phone }, messageCount: 0 };
+  listeners.forEach((l) => l());
 }
 
 export function logout() {
-  user = null;
-  messageCount = 0;
-  notify();
+  snapshot = { user: null, messageCount: 0 };
+  listeners.forEach((l) => l());
 }
 
 export function getMessagesRemaining() {
-  if (user) return Infinity; // Logged-in users have no limit
-  return Math.max(0, DAILY_LIMIT - messageCount);
+  if (snapshot.user) return Infinity;
+  return Math.max(0, DAILY_LIMIT - snapshot.messageCount);
 }
 
 export function getMessageCount() {
-  return messageCount;
+  return snapshot.messageCount;
 }
 
 export function shouldShowWarning() {
-  if (user) return false;
+  if (snapshot.user) return false;
   const remaining = getMessagesRemaining();
   return remaining > 0 && remaining <= WARNING_THRESHOLD;
 }
 
 export function isLimitReached() {
-  if (user) return false;
+  if (snapshot.user) return false;
   return getMessagesRemaining() <= 0;
 }
 
 /** Call this when a guest sends a message. Returns true if allowed. */
 export function recordGuestMessage(): boolean {
-  if (user) return true; // Logged-in users always allowed
-  if (messageCount >= DAILY_LIMIT) return false;
-  messageCount++;
-  notify();
+  if (snapshot.user) return true;
+  if (snapshot.messageCount >= DAILY_LIMIT) return false;
+  snapshot = { ...snapshot, messageCount: snapshot.messageCount + 1 };
+  listeners.forEach((l) => l());
   return true;
 }
