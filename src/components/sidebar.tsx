@@ -14,11 +14,10 @@ import {
   Search,
   Users,
   LogIn,
-  LogOut,
   User,
 } from "lucide-react";
 import { getSessions, subscribe, ChatSession } from "@/lib/chat-store";
-import { subscribeAuth, getAuthState, logout } from "@/lib/auth-store";
+import { subscribeAuth, getAuthState } from "@/lib/auth-store";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -196,29 +195,18 @@ export function Sidebar() {
             <span>Đăng nhập V-ID</span>
           </Link>
         ) : (
-          <div className="flex items-center gap-3 px-3 py-2">
+          <Link
+            href="/settings"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
             <div className="w-8 h-8 rounded-full bg-[#EA0029] flex items-center justify-center">
               <User size={15} className="text-white" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-gray-900 truncate">{authState.user!.phone}</p>
             </div>
-            <div className="flex items-center gap-0.5">
-              <button
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                title="Cài đặt"
-              >
-                <Settings size={14} />
-              </button>
-              <button
-                onClick={logout}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
-                title="Đăng xuất"
-              >
-                <LogOut size={14} />
-              </button>
-            </div>
-          </div>
+            <Settings size={14} className="text-gray-400 shrink-0" />
+          </Link>
         )}
       </div>
     </div>
