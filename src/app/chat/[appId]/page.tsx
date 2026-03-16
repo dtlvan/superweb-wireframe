@@ -10,6 +10,8 @@ import {
   Paperclip,
   Mic,
   Globe,
+  AlertTriangle,
+  Lock,
 } from "lucide-react";
 import {
   getSession,
@@ -18,6 +20,15 @@ import {
   addMessage,
   updateLastAssistantMessage,
 } from "@/lib/chat-store";
+import {
+  subscribeAuth,
+  getAuthState,
+  getMessagesRemaining,
+  shouldShowWarning,
+  isLimitReached,
+  recordGuestMessage,
+  isLoggedIn,
+} from "@/lib/auth-store";
 import { getScriptedResponse } from "@/lib/scripted-conversations";
 import { ChatMessageBubble } from "@/components/chat-message";
 import { AIChainOfThought } from "@/components/chain-of-thought";
@@ -80,7 +91,12 @@ export default function ChatPage() {
   const sessionId = params.appId as string;
 
   const sessions = useSyncExternalStore(subscribe, getSessions, getSessions);
+  const authState = useSyncExternalStore(subscribeAuth, getAuthState, getAuthState);
   const session = getSession(sessionId);
+
+  const remaining = getMessagesRemaining();
+  const showWarning = shouldShowWarning();
+  const limitReached = isLimitReached();
 
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
@@ -181,7 +197,10 @@ export default function ChatPage() {
 
   async function handleSend(text?: string) {
     const userMsg = (text || input).trim();
-    if (!userMsg || isStreaming || !session) return;
+    if (!userMsg || isStreaming || !session || limitReached) return;
+
+    // Record guest message usage
+    if (!recordGuestMessage()) return;
 
     setInput("");
 
@@ -309,6 +328,45 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Message limit warning */}
+      {showWarning && (
+        <div className="px-6 shrink-0">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+              <AlertTriangle size={16} className="shrink-0" />
+              <span>
+                Bạn còn <strong>{remaining}</strong> tin nhắn miễn phí hôm nay.{" "}
+                <a href="/login" className="font-semibold text-[#EA0029] hover:underline">
+                  Đăng nhập
+                </a>{" "}
+                để sử dụng không giới hạn.
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Limit reached block */}
+      {limitReached && (
+        <div className="px-6 shrink-0">
+          <div className="max-w-3xl mx-auto">
+            <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm">
+              <Lock size={16} className="shrink-0" />
+              <div className="flex-1">
+                <p className="font-semibold">Đã hết lượt tin nhắn miễn phí hôm nay</p>
+                <p className="text-red-600 mt-0.5">Đăng nhập bằng V-ID để tiếp tục sử dụng không giới hạn.</p>
+              </div>
+              <a
+                href="/login"
+                className="px-4 py-2 rounded-lg bg-[#EA0029] text-white text-sm font-semibold hover:bg-[#C80023] transition-colors shrink-0"
+              >
+                Đăng nhập
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI Prompt Input */}
       <div className="border-t border-gray-200 px-6 py-3 shrink-0 bg-white/80 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto">
@@ -329,9 +387,9 @@ export default function ChatPage() {
                     handleSend();
                   }
                 }}
-                placeholder={`Hỏi ${session.appName} bất cứ điều gì...`}
+                placeholder={limitReached ? "Đăng nhập để tiếp tục..." : `Hỏi ${session.appName} bất cứ điều gì...`}
                 rows={1}
-                disabled={isStreaming}
+                disabled={isStreaming || limitReached}
                 className="flex-1 bg-transparent resize-none text-[15px] text-gray-900 placeholder-gray-400 focus:outline-none min-h-[24px] max-h-[120px] disabled:opacity-50"
               />
             </div>
@@ -374,9 +432,9 @@ export default function ChatPage() {
                 )}
                 <button
                   onClick={() => handleSend()}
-                  disabled={!input.trim() || isStreaming}
+                  disabled={!input.trim() || isStreaming || limitReached}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    input.trim() && !isStreaming
+                    input.trim() && !isStreaming && !limitReached
                       ? "bg-[#EA0029] hover:bg-[#C80023] text-white shadow-sm"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed"
                   }`}

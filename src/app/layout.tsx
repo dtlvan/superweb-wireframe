@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Geist } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/sidebar";
 import { cn } from "@/lib/utils";
+import { AppShell } from "@/components/app-shell";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -24,10 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans", geist.variable)}>
       <body className={`${inter.variable} font-sans antialiased bg-white text-gray-900`}>
-        <div className="flex h-screen overflow-hidden">
-          <Sidebar />
-          <main className="flex-1 overflow-hidden">{children}</main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
